@@ -1,5 +1,9 @@
 # MailHatch
 
+<p align="center">
+  <img src="assets/mailhatch-mascot.png" width="300" alt="MailHatch mascot: a cheerful golden hatchling emerging from a blue envelope shell">
+</p>
+
 [![CI](https://github.com/software-atelier/mailhatch/actions/workflows/ci.yml/badge.svg)](https://github.com/software-atelier/mailhatch/actions/workflows/ci.yml)
 [![Java 21](https://img.shields.io/badge/Java-21-blue.svg)](https://openjdk.org/projects/jdk/21/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
