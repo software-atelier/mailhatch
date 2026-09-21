@@ -6,7 +6,7 @@
 
     <groupId>ch.softwareatelier</groupId>
     <artifactId>mailhatch</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <name>MailHatch</name>
     <description>An embeddable Java SMTP server that turns email into handler-friendly objects.</description>
     <url>https://github.com/software-atelier/mailhatch</url>

@@ -82,6 +82,21 @@ public final class MailHatchServer implements AutoCloseable {
         return channel != null && channel.isActive();
     }
 
+    /**
+     * Blocks until this server's listener is closed.
+     *
+     * <p>This is useful in a standalone application's main method after {@link #start()}.
+     * Another thread, a shutdown hook, or the JVM shutdown itself may close the server.</p>
+     *
+     * @throws IllegalStateException if the server has not been started
+     * @throws InterruptedException if the waiting thread is interrupted
+     */
+    public void awaitShutdown() throws InterruptedException {
+        Channel channel = serverChannel;
+        if (channel == null) throw new IllegalStateException("Server is not started");
+        channel.closeFuture().await();
+    }
+
     @Override
     public synchronized void close() {
         Channel channel = serverChannel;

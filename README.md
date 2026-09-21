@@ -30,7 +30,7 @@ with `mvn install`, then add MailHatch to your application:
 <dependency>
   <groupId>ch.softwareatelier</groupId>
   <artifactId>mailhatch</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
 </dependency>
 ```
 
@@ -52,7 +52,7 @@ try (var server = new MailHatchServer(config, message -> {
     message.attachments().forEach(a ->
         System.out.println(a.filename() + " (" + a.content().length + " bytes)"));
 }).start()) {
-    Thread.currentThread().join();
+    server.awaitShutdown();
 }
 ```
 

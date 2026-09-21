@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,6 +84,26 @@ class MailHatchServerTest {
         try (var server = new MailHatchServer(baseConfig().build(), received::add).start()) {
             send("smtp", server.port(), false, sampleMessage());
             assertThat(received.poll(5, TimeUnit.SECONDS)).isNotNull();
+        }
+    }
+
+    @Test
+    void awaitShutdownBlocksUntilServerCloses() throws Exception {
+        var server = new MailHatchServer(baseConfig().build(), ignored -> {}).start();
+        try (var executor = Executors.newSingleThreadExecutor()) {
+            var waiting = executor.submit(() -> {
+                server.awaitShutdown();
+                return null;
+            });
+
+            Thread.sleep(100);
+            assertThat(waiting).isNotDone();
+
+            server.close();
+            waiting.get(2, TimeUnit.SECONDS);
+            assertThat(waiting).isDone();
+        } finally {
+            server.close();
         }
     }
 

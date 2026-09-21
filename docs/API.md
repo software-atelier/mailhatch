@@ -7,12 +7,17 @@
 1. Build an immutable `MailHatchConfig`.
 2. Construct the server with a `MailHandler`.
 3. Call `start()` once.
-4. Call `close()` during application shutdown.
+4. In standalone applications, optionally call `awaitShutdown()` to keep the main thread
+   alive until the listener closes.
+5. Call `close()` during application shutdown.
 
 `start()` binds synchronously. A bind problem fails startup rather than leaving a partially
 active server. TLS material is validated by `TlsConfig` and parsed when a TLS connection is
 first negotiated. `close()` stops accepting connections, closes the listener, and terminates
 its Netty event-loop groups.
+
+`awaitShutdown()` expresses the standalone lifecycle directly. It blocks until another
+thread or shutdown path closes the listener and propagates thread interruption normally.
 
 ## Handler contract
 
