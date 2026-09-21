@@ -37,7 +37,7 @@
         <angus.version>2.0.5</angus.version>
         <jakarta.mail.version>2.1.5</jakarta.mail.version>
         <jakarta.activation.version>2.1.4</jakarta.activation.version>
-        <slf4j.version>2.0.17</slf4j.version>
+        <slf4j.version>2.0.19</slf4j.version>
         <junit.version>5.13.4</junit.version>
         <assertj.version>3.27.6</assertj.version>
         <bouncycastle.version>1.86</bouncycastle.version>
