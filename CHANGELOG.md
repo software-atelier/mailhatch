@@ -4,6 +4,17 @@ All notable changes are documented here. This project follows Semantic Versionin
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-22
+
+### Added
+
+- `RecipientPolicy` and immutable `RecipientContext` for validation during `RCPT TO`.
+- `SmtpReplyException` for deliberate, validated temporary or permanent SMTP replies.
+
+### Security
+
+- Reject response text containing line breaks to prevent SMTP response injection.
+
 ## [0.2.0] - 2026-09-21
 
 ### Added

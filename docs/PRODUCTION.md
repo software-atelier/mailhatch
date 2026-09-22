@@ -8,6 +8,7 @@
 - Set `maxMessageBytes`, `maxRecipients`, and `idleTimeout` for the workload.
 - Supply a bounded executor or virtual-thread executor appropriate for the handler.
 - Persist accepted work durably before the handler returns.
+- Keep `RecipientPolicy` non-blocking; refresh remote route data into a local cache.
 - Make the handler idempotent because SMTP senders retry temporary failures.
 - Add application metrics for accepted, rejected, failed, and processing duration.
 - Avoid logging raw bodies, credentials, or sensitive headers.
@@ -20,6 +21,10 @@ For hostile internet traffic, consider placing a mature MTA or SMTP security gat
 front for connection throttling, reputation controls, greylisting, DKIM/SPF/DMARC policy,
 antivirus, and recipient validation. The proxy can forward accepted traffic to MailHatch
 over an isolated network.
+
+When an edge MTA queues mail before forwarding it, downstream MailHatch replies are not
+necessarily returned to the original SMTP client. Configure recipient validation at the
+edge as well if unknown addresses must receive an immediate `550`.
 
 ## Graceful shutdown
 

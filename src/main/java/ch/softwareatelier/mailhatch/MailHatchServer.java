@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** Embeddable SMTP server. Create, start, and close one instance per listener. */
 public final class MailHatchServer implements AutoCloseable {
     private final MailHatchConfig config;
+    private final RecipientPolicy recipientPolicy;
     private final MailHandler handler;
     private final EventLoopGroup bossGroup = new NioEventLoopGroup(1,
             new DefaultThreadFactory("mailhatch-acceptor", true));
@@ -32,7 +33,19 @@ public final class MailHatchServer implements AutoCloseable {
 
     /** @param config listener configuration @param handler application callback */
     public MailHatchServer(MailHatchConfig config, MailHandler handler) {
+        this(config, RecipientPolicy.acceptAll(), handler);
+    }
+
+    /**
+     * Creates a server with application-defined envelope recipient validation.
+     *
+     * @param config listener configuration
+     * @param recipientPolicy non-blocking policy evaluated for every {@code RCPT TO}
+     * @param handler application callback invoked after DATA has been parsed
+     */
+    public MailHatchServer(MailHatchConfig config, RecipientPolicy recipientPolicy, MailHandler handler) {
         this.config = Objects.requireNonNull(config, "config");
+        this.recipientPolicy = Objects.requireNonNull(recipientPolicy, "recipientPolicy");
         this.handler = Objects.requireNonNull(handler, "handler");
     }
 
@@ -58,7 +71,7 @@ public final class MailHatchServer implements AutoCloseable {
                                     config.idleTimeout().toSeconds(), 0, 0, TimeUnit.SECONDS));
                             channel.pipeline().addLast("lines", new LineBasedFrameDecoder(1_048_576, true, true));
                             channel.pipeline().addLast("smtp", new SmtpSessionHandler(
-                                    config, handler, sslContexts, implicitTls));
+                                    config, recipientPolicy, handler, sslContexts, implicitTls));
                         }
                     });
             serverChannel = bootstrap.bind(config.bindAddress(), config.port()).syncUninterruptibly().channel();

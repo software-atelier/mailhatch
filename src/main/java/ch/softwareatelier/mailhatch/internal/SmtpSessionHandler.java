@@ -3,6 +3,9 @@ package ch.softwareatelier.mailhatch.internal;
 import ch.softwareatelier.mailhatch.MailEnvelope;
 import ch.softwareatelier.mailhatch.MailHandler;
 import ch.softwareatelier.mailhatch.MailHatchConfig;
+import ch.softwareatelier.mailhatch.RecipientContext;
+import ch.softwareatelier.mailhatch.RecipientPolicy;
+import ch.softwareatelier.mailhatch.SmtpReplyException;
 import ch.softwareatelier.mailhatch.TlsMode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -25,6 +28,7 @@ public final class SmtpSessionHandler extends SimpleChannelInboundHandler<ByteBu
     private static final Logger LOG = LoggerFactory.getLogger(SmtpSessionHandler.class);
 
     private final MailHatchConfig config;
+    private final RecipientPolicy recipientPolicy;
     private final MailHandler handler;
     private final ReloadingSslContextProvider sslContexts;
     private final MimeMessageParser parser = new MimeMessageParser();
@@ -36,9 +40,10 @@ public final class SmtpSessionHandler extends SimpleChannelInboundHandler<ByteBu
     private boolean dataTooLarge;
     private boolean tlsActive;
 
-    public SmtpSessionHandler(MailHatchConfig config, MailHandler handler,
+    public SmtpSessionHandler(MailHatchConfig config, RecipientPolicy recipientPolicy, MailHandler handler,
                               ReloadingSslContextProvider sslContexts, boolean tlsActive) {
         this.config = config;
+        this.recipientPolicy = recipientPolicy;
         this.handler = handler;
         this.sslContexts = sslContexts;
         this.tlsActive = tlsActive;
@@ -144,6 +149,18 @@ public final class SmtpSessionHandler extends SimpleChannelInboundHandler<ByteBu
         String path = extractPath(argument.substring(3));
         if (path == null || path.isEmpty()) { reply(context, "501 Invalid forward-path"); return; }
         if (recipients.size() >= config.maxRecipients()) { reply(context, "452 Too many recipients"); return; }
+        try {
+            var remote = (InetSocketAddress) context.channel().remoteAddress();
+            recipientPolicy.validate(new RecipientContext(
+                    mailFrom, path, recipients, helo, remote, tlsActive));
+        } catch (SmtpReplyException rejection) {
+            reply(context, rejection.responseLine());
+            return;
+        } catch (Exception failure) {
+            LOG.warn("Recipient policy failed", failure);
+            reply(context, "451 4.3.0 Recipient policy temporarily unavailable");
+            return;
+        }
         recipients.add(path);
         reply(context, "250 OK");
     }
@@ -220,6 +237,9 @@ public final class SmtpSessionHandler extends SimpleChannelInboundHandler<ByteBu
         context.channel().config().setAutoRead(true);
         if (failure == null) {
             reply(context, "250 Message accepted for delivery");
+        } else if (failure instanceof SmtpReplyException rejection) {
+            LOG.debug("Mail handler rejected message: {}", rejection.responseLine());
+            reply(context, rejection.responseLine());
         } else {
             LOG.warn("Mail handler failed", failure);
             reply(context, "451 Requested action aborted: local error in processing");

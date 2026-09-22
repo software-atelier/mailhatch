@@ -7,7 +7,8 @@ public interface MailHandler {
      * Handles one accepted SMTP message.
      *
      * @param message parsed message and SMTP envelope
-     * @throws Exception to reject the SMTP transaction with a temporary failure
+     * @throws SmtpReplyException to reject with a deliberate 4xx or 5xx SMTP reply
+     * @throws Exception to reject the SMTP transaction with a generic temporary failure
      */
     void handle(InboundMessage message) throws Exception;
 }

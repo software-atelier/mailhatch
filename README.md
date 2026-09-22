@@ -21,6 +21,7 @@ relay email.
 - Parsed SMTP envelope, headers, addresses, metadata, text and HTML bodies
 - Decoded attachments plus the original raw message
 - Configurable size, recipient, and idle-time limits
+- Application-defined recipient validation and deliberate 4xx/5xx replies
 - Handler execution outside Netty's I/O event loop
 - No application framework or dependency-injection container required
 - Java 21, Maven, Apache 2.0
@@ -34,7 +35,7 @@ with `mvn install`, then add MailHatch to your application:
 <dependency>
   <groupId>ch.softwareatelier</groupId>
   <artifactId>mailhatch</artifactId>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
 </dependency>
 ```
 
@@ -62,6 +63,27 @@ try (var server = new MailHatchServer(config, message -> {
 
 The handler is the application boundary. MailHatch contains no business-specific
 handler implementation.
+
+Validate an envelope recipient before accepting message data:
+
+```java
+var server = new MailHatchServer(config, context -> {
+    if (!routeCache.contains(context.recipient())) {
+        throw new SmtpReplyException(550, "5.1.1", "Unknown recipient");
+    }
+}, message -> {
+    try {
+        application.store(message);
+    } catch (ApplicationUnavailableException unavailable) {
+        throw new SmtpReplyException(451, "4.3.0", "Storage temporarily unavailable");
+    }
+});
+```
+
+`RecipientPolicy` runs during `RCPT TO` on the connection I/O thread and must not block;
+use a local cache for remotely managed routes. A normal handler exception still returns
+generic `451`. Throw `SmtpReplyException` when the application needs an explicit 4xx or
+5xx reply after `DATA`.
 
 ## STARTTLS with Let's Encrypt
 
@@ -130,11 +152,13 @@ MailHatch implements the inbound subset needed by processing applications: EHLO/
 MAIL, RCPT, DATA, RSET, NOOP, QUIT, SIZE, 8BITMIME, SMTPUTF8, PIPELINING, and STARTTLS.
 If parsing or the handler fails, the SMTP transaction is rejected instead of silently
 losing the message. A handler exception returns a temporary `451`, allowing a conforming
-sender to retry.
+sender to retry. A `RecipientPolicy` can reject during `RCPT TO`; a policy or handler can
+throw `SmtpReplyException` for a deliberate, validated 4xx or 5xx response.
 
 MailHatch has no outbound delivery path and therefore cannot act as an open relay.
-Recipient/domain policy, authentication, persistence, deduplication, and retry semantics
-belong to the embedding application or an SMTP proxy in front of it.
+Authentication, persistence, deduplication, and retry semantics belong to the embedding
+application or an SMTP proxy in front of it. MailHatch provides the recipient-policy hook,
+but the application supplies and refreshes the actual routing data.
 
 ## Build and test
 

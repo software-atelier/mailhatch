@@ -12,10 +12,46 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SmtpProtocolTest {
+    @Test
+    void recipientPolicyCanRejectUnknownRecipientAtRcptStage() throws Exception {
+        var observed = new AtomicReference<RecipientContext>();
+        RecipientPolicy policy = context -> {
+            observed.set(context);
+            if (!context.recipient().equals("known@example.net")) {
+                throw new SmtpReplyException(550, "5.1.1", "Unknown recipient");
+            }
+        };
+        try (var server = new MailHatchServer(configBuilder().build(), policy, ignored -> {}).start();
+             var smtp = Client.connect(server.port())) {
+            smtp.read();
+            smtp.command("EHLO test.example", "250");
+            smtp.command("MAIL FROM:<sender@example.org>", "250");
+            smtp.command("RCPT TO:<missing@example.net>", "550 5.1.1 Unknown recipient");
+            smtp.command("RCPT TO:<known@example.net>", "250");
+
+            assertThat(observed.get().mailFrom()).isEqualTo("sender@example.org");
+            assertThat(observed.get().helo()).isEqualTo("test.example");
+            assertThat(observed.get().acceptedRecipients()).isEmpty();
+        }
+    }
+
+    @Test
+    void recipientPolicyFailureIsTemporary() throws Exception {
+        RecipientPolicy policy = ignored -> { throw new Exception("route cache unavailable"); };
+        try (var server = new MailHatchServer(configBuilder().build(), policy, ignored -> {}).start();
+             var smtp = Client.connect(server.port())) {
+            smtp.read();
+            smtp.command("EHLO test.example", "250");
+            smtp.command("MAIL FROM:<sender@example.org>", "250");
+            smtp.command("RCPT TO:<receiver@example.net>", "451 4.3.0");
+        }
+    }
+
     @Test
     void startTlsCanBeRequiredBeforeMailTransaction() throws Exception {
         var certificate = new SelfSignedCertificate("localhost");
@@ -74,6 +110,40 @@ class SmtpProtocolTest {
             smtp.write(".");
             assertThat(smtp.read()).startsWith("451");
         }
+    }
+
+    @Test
+    void handlerCanReturnDeliberatePermanentFailure() throws Exception {
+        var config = configBuilder().build();
+        try (var server = new MailHatchServer(config, ignored -> {
+            throw new SmtpReplyException(554, "5.6.0", "Unsupported message content");
+        }).start(); var smtp = Client.connect(server.port())) {
+            smtp.read();
+            smtp.command("EHLO test.example", "250");
+            smtp.command("MAIL FROM:<sender@example.org>", "250");
+            smtp.command("RCPT TO:<receiver@example.net>", "250");
+            smtp.command("DATA", "354");
+            smtp.write("From: sender@example.org");
+            smtp.write("To: receiver@example.net");
+            smtp.write("Subject: reject me");
+            smtp.write("");
+            smtp.write("body");
+            smtp.write(".");
+            assertThat(smtp.read()).isEqualTo("554 5.6.0 Unsupported message content");
+        }
+    }
+
+    @Test
+    void smtpReplyRejectsResponseInjectionAndInvalidCodes() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> new SmtpReplyException(250, "2.0.0", "Not a rejection"))
+                .isInstanceOf(IllegalArgumentException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> new SmtpReplyException(550, "5.1.1", "No\r\n250 injected"))
+                .isInstanceOf(IllegalArgumentException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> new SmtpReplyException(550, "4.1.1", "Mismatched class"))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     private static MailHatchConfig.Builder configBuilder() throws Exception {

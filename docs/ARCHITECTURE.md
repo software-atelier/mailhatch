@@ -7,7 +7,7 @@ SMTP client
     v
 Netty listener
     |
-    | SMTP state machine + limits
+    | SMTP state machine + limits + RecipientPolicy at RCPT TO
     v
 RFC 5322 bytes
     |
@@ -32,6 +32,10 @@ Applications should not import the internal package; it may change between minor
 Each TCP connection owns one state machine. It records the greeting, reverse path,
 forward paths, TLS state, and current DATA buffer. `RSET` and successful or failed
 delivery clear transaction state while preserving the connection greeting.
+
+Before a forward path is added, the public `RecipientPolicy` sees immutable envelope
+context. The policy runs on the session event loop and therefore cannot block. Handler
+execution remains isolated on the configured executor after MIME parsing.
 
 The implementation uses Netty line framing. SMTP dot-stuffing is removed during DATA and
 CRLF line endings are retained in the reconstructed raw message. The message-size limit
