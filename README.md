@@ -5,6 +5,7 @@
 </p>
 
 [![CI](https://github.com/software-atelier/mailhatch/actions/workflows/ci.yml/badge.svg)](https://github.com/software-atelier/mailhatch/actions/workflows/ci.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/ch.softwareatelier/mailhatch.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/ch.softwareatelier/mailhatch)
 [![Java 21](https://img.shields.io/badge/Java-21-blue.svg)](https://openjdk.org/projects/jdk/21/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
@@ -28,14 +29,15 @@ relay email.
 
 ## Quick start
 
-Until a Maven Central release is available, clone the repository and install it locally
-with `mvn install`, then add MailHatch to your application:
+MailHatch 0.3.1 is available from
+[Maven Central](https://central.sonatype.com/artifact/ch.softwareatelier/mailhatch/0.3.1).
+Add it to your Maven project:
 
 ```xml
 <dependency>
   <groupId>ch.softwareatelier</groupId>
   <artifactId>mailhatch</artifactId>
-  <version>0.3.0</version>
+  <version>0.3.1</version>
 </dependency>
 ```
 
@@ -176,6 +178,7 @@ through Angus Mail using plain SMTP, STARTTLS, and SMTPS.
 - [Architecture and processing flow](docs/ARCHITECTURE.md)
 - [TLS and Let's Encrypt](docs/TLS.md)
 - [Production checklist](docs/PRODUCTION.md)
+- [Release process](docs/RELEASING.md)
 - [Security policy](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
 
