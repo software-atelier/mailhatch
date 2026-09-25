@@ -7,7 +7,9 @@ also be started manually for an existing tag.
 ## One-time setup
 
 1. In the [Central Portal](https://central.sonatype.com/), verify ownership of the
-   `ch.softwareatelier` namespace.
+   `ch.software-atelier` namespace.
+   This is also the Maven `groupId`; the Java package remains
+   `ch.softwareatelier.mailhatch` because Java identifiers cannot contain hyphens.
 2. Create a Central Portal user token. Its generated username and password are
    separate values; legacy OSSRH credentials do not work with this workflow.
 3. Create a password-protected OpenPGP signing key for releases and publish its
