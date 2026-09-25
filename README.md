@@ -5,7 +5,7 @@
 </p>
 
 [![CI](https://github.com/software-atelier/mailhatch/actions/workflows/ci.yml/badge.svg)](https://github.com/software-atelier/mailhatch/actions/workflows/ci.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/ch.softwareatelier/mailhatch.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/ch.softwareatelier/mailhatch)
+[![Maven Central](https://img.shields.io/maven-central/v/ch.software-atelier/mailhatch.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/ch.software-atelier/mailhatch)
 [![Java 21](https://img.shields.io/badge/Java-21-blue.svg)](https://openjdk.org/projects/jdk/21/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
@@ -30,16 +30,20 @@ relay email.
 ## Quick start
 
 MailHatch 0.3.1 is available from
-[Maven Central](https://central.sonatype.com/artifact/ch.softwareatelier/mailhatch/0.3.1).
+[Maven Central](https://central.sonatype.com/artifact/ch.software-atelier/mailhatch/0.3.1).
 Add it to your Maven project:
 
 ```xml
 <dependency>
-  <groupId>ch.softwareatelier</groupId>
+  <groupId>ch.software-atelier</groupId>
   <artifactId>mailhatch</artifactId>
   <version>0.3.1</version>
 </dependency>
 ```
+
+The Maven group ID follows the verified `software-atelier.ch` domain and
+therefore contains a hyphen. Java package names cannot contain hyphens, so the
+public API remains under `ch.softwareatelier.mailhatch`.
 
 Create and start a listener:
 
