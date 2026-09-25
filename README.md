@@ -5,6 +5,7 @@
 </p>
 
 [![CI](https://github.com/software-atelier/mailhatch/actions/workflows/ci.yml/badge.svg)](https://github.com/software-atelier/mailhatch/actions/workflows/ci.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/ch.softwareatelier/mailhatch.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/ch.softwareatelier/mailhatch)
 [![Java 21](https://img.shields.io/badge/Java-21-blue.svg)](https://openjdk.org/projects/jdk/21/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
@@ -28,9 +29,9 @@ relay email.
 
 ## Quick start
 
-Once version 0.3.1 is available from
-[Maven Central](https://central.sonatype.com/artifact/ch.softwareatelier/mailhatch), add
-MailHatch to your Maven project:
+MailHatch 0.3.1 is available from
+[Maven Central](https://central.sonatype.com/artifact/ch.softwareatelier/mailhatch/0.3.1).
+Add it to your Maven project:
 
 ```xml
 <dependency>
@@ -39,8 +40,6 @@ MailHatch to your Maven project:
   <version>0.3.1</version>
 </dependency>
 ```
-
-Until then, clone the repository and install the current checkout with `mvn install`.
 
 Create and start a listener:
 
