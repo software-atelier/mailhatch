@@ -28,16 +28,19 @@ relay email.
 
 ## Quick start
 
-Until a Maven Central release is available, clone the repository and install it locally
-with `mvn install`, then add MailHatch to your application:
+Once version 0.3.1 is available from
+[Maven Central](https://central.sonatype.com/artifact/ch.softwareatelier/mailhatch), add
+MailHatch to your Maven project:
 
 ```xml
 <dependency>
   <groupId>ch.softwareatelier</groupId>
   <artifactId>mailhatch</artifactId>
-  <version>0.3.0</version>
+  <version>0.3.1</version>
 </dependency>
 ```
+
+Until then, clone the repository and install the current checkout with `mvn install`.
 
 Create and start a listener:
 
@@ -176,6 +179,7 @@ through Angus Mail using plain SMTP, STARTTLS, and SMTPS.
 - [Architecture and processing flow](docs/ARCHITECTURE.md)
 - [TLS and Let's Encrypt](docs/TLS.md)
 - [Production checklist](docs/PRODUCTION.md)
+- [Release process](docs/RELEASING.md)
 - [Security policy](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
 
