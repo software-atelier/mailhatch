@@ -33,7 +33,7 @@
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <netty.version>4.1.138.Final</netty.version>
+        <netty.version>4.2.18.Final</netty.version>
         <angus.version>2.0.5</angus.version>
         <jakarta.mail.version>2.1.5</jakarta.mail.version>
         <jakarta.activation.version>2.1.4</jakarta.activation.version>
